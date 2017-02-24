@@ -2,6 +2,12 @@
 //    Verkefni 2 í Tölvugrafík
 //    Game of Life in 3D
 /////////////////////////////////////////////////////////////////
+
+
+//
+// Global Variables
+//
+
 var canvas;
 var gl;
 
@@ -44,6 +50,31 @@ var previousState, currentState;
 
 var numberOfNeighbours;
 
+var consoleCount = 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+// init function:
+//
+
+
 window.onload = function init()
 {
     canvas = document.getElementById( "gl-canvas" );
@@ -83,8 +114,8 @@ window.onload = function init()
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
 
-    // Preallocate n x n x n arrays previousState , currentState and numberOfNeighbours
     
+    // Preallocate n x n x n arrays previousState , currentState and numberOfNeighbours
 
     previousState = new Array(n).fill(0);
 
@@ -123,6 +154,7 @@ window.onload = function init()
         });
     });
 
+
     // Initialize previousState (1 means the box is alive, 0 means that it is dead)
 
     for(var i = 0; i < n; i++){
@@ -133,10 +165,9 @@ window.onload = function init()
             }
         }
     }
-    //console.log(typeof previousState[0][0][0]);
 
+    console.log("PreviousState:");
     console.log(previousState);
-    //console.log(currentState);
 
 
 
@@ -163,6 +194,74 @@ window.onload = function init()
     
     render();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+// Several helper functions:
+//
+
+
+
+
+function isInsideBounds(i,j,k)
+{
+	if( i>=0 && i<n && j>=0 && j<n && k>=0 && k<n ) {
+		return true
+	}
+	else {
+		return false
+	}
+}
+
+function countNumberOfNeighbours(x,y,z)
+{
+	//console.log("x:");
+    //console.log(x);
+    //console.log("y:");
+    //console.log(y);
+    //console.log("z:");
+    //console.log(z);
+
+	var count = 0;
+
+	for(var i = -1; i <= 1; i++) {
+		for(var j = -1; j<= 1; j++) {
+			for(var k = -1; k <= 1; k++) {
+				
+				if(isInsideBounds(x+i,y+j,z+k)){
+        			count = count + previousState[x+i][y+j][z+k];
+    			}
+
+    			//if(y==9){
+    				//console.log("i:");
+    				//console.log(i);
+    				//console.log("j:");
+    				//console.log(j);
+    				//console.log("k:");
+    				//console.log(k);
+    			//}
+
+			}
+		}
+	}
+
+	count = count - previousState[x][y][z];
+	return count;
+}
+
 
 function colorCube()
 {
@@ -214,6 +313,24 @@ function quad(a, b, c, d)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+// render function:
+//
+
 function render()
 {
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -224,9 +341,21 @@ function render()
 
     // Calculate numberOfNeighbours using previousState
 
+    for(var i = 0; i < n; i++){
+        for(var j = 0; j < n; j++){
+            for(var k = 0; k < n; k++){
 
+				numberOfNeighbours[i][j][k] = countNumberOfNeighbours(i,j,k);
 
+            }
+        }
+    }
 
+    if(consoleCount == 0){
+    	console.log("numberOfNeighbours:")
+    	console.log(numberOfNeighbours);
+    	consoleCount++;
+    }
 
 
 
@@ -235,18 +364,14 @@ function render()
 
 
 
-
-
-
-
-
     //Set previousState equal to currentState
-    previousState = currentState;
+    //previousState = currentState;
 
 
+
+
+    // View rotations
     var ctm = mat4();
-    //ctm = mult(ctm, lookAt( vec3(250.0, 0.0, 100.0+height), vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0) ));
-    //console.log(ctm);
     ctm = mult( ctm, rotateX(spinX) );
     ctm = mult( ctm, rotateY(spinY) ) ;
 
@@ -270,8 +395,6 @@ function render()
                 gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
                 ctm = mat4();
-                //ctm = mult(ctm,lookAt( vec3(250.0, 0.0, 100.0+height), vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0) ));
-                //console.log(ctm);
                 ctm = mult( ctm, rotateX(spinX) );
                 ctm = mult( ctm, rotateY(spinY) ) ;
 
@@ -283,11 +406,6 @@ function render()
         deltaY = init;
         deltaZ += lengthCell;
     }
-    
-    //ctm = mult( ctm, translate( , , , ));
-    //ctm = mult( ctm, scalem( lengthBox, lengthBox, lengthBox ) );
-    //gl.uniformMatrix4fv(matrixLoc, false, flatten(ctm));
-    //gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
 
     requestAnimFrame( render );
