@@ -361,7 +361,33 @@ function render()
 
     // Calculate currentState using numberOfNeighbours
 
+    for(var i = 0; i < n; i++){
+        for(var j = 0; j < n; j++){
+            for(var k = 0; k < n; k++){
 
+            	if(previousState[i][j][k] == 1)
+				{
+					if(numberOfNeighbours[i][j][k] >= 5 && numberOfNeighbours[i][j][k] <= 7){
+						currentState[i][j][k] = 1;
+					}
+					else {
+						currentState[i][j][k] = 0;
+					}
+				}
+
+				if(previousState[i][j][k] == 0 ) {
+					if(numberOfNeighbours[i][j][k] == 6){
+						currentState[i][j][k] = 1;
+					}
+					else {
+						currentState[i][j][k] = 0;
+					}
+				
+				}
+
+            }
+        }
+    }
 
 
     //Set previousState equal to currentState
