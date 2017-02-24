@@ -333,107 +333,115 @@ function quad(a, b, c, d)
 
 function render()
 {
-    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    setTimeout(function() {
+        window.requestAnimFrame(render);
+        gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    //  Projection Matrix    
-    projectionMatrix = ortho(left, right, bottom, ytop, near, far);
-    gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
+        //  Projection Matrix    
+        projectionMatrix = ortho(left, right, bottom, ytop, near, far);
+        gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
-    // Calculate numberOfNeighbours using previousState
+        // Calculate numberOfNeighbours using previousState
 
-    for(var i = 0; i < n; i++){
-        for(var j = 0; j < n; j++){
-            for(var k = 0; k < n; k++){
+        for(var i = 0; i < n; i++){
+            for(var j = 0; j < n; j++){
+                for(var k = 0; k < n; k++){
 
-				numberOfNeighbours[i][j][k] = countNumberOfNeighbours(i,j,k);
+				    numberOfNeighbours[i][j][k] = countNumberOfNeighbours(i,j,k);
 
+                }
             }
         }
-    }
 
-    if(consoleCount == 0){
-    	console.log("numberOfNeighbours:")
-    	console.log(numberOfNeighbours);
-    	consoleCount++;
-    }
-
+        if(consoleCount == 0){
+    	   console.log("numberOfNeighbours:")
+    	   console.log(numberOfNeighbours);
+    	   consoleCount++;
+        }
 
 
-    // Calculate currentState using numberOfNeighbours
 
-    for(var i = 0; i < n; i++){
-        for(var j = 0; j < n; j++){
-            for(var k = 0; k < n; k++){
+        // Calculate currentState using numberOfNeighbours
 
-            	if(previousState[i][j][k] == 1)
-				{
-					if(numberOfNeighbours[i][j][k] >= 5 && numberOfNeighbours[i][j][k] <= 7){
-						currentState[i][j][k] = 1;
-					}
-					else {
-						currentState[i][j][k] = 0;
-					}
-				}
+        for(var i = 0; i < n; i++){
+            for(var j = 0; j < n; j++){
+                for(var k = 0; k < n; k++){
 
-				if(previousState[i][j][k] == 0 ) {
-					if(numberOfNeighbours[i][j][k] == 6){
-						currentState[i][j][k] = 1;
-					}
-					else {
-						currentState[i][j][k] = 0;
-					}
+            	   if(previousState[i][j][k] == 1)
+				    {
+					   if(numberOfNeighbours[i][j][k] >= 5 && numberOfNeighbours[i][j][k] <= 7){
+						  currentState[i][j][k] = 1;
+					   }
+					   else {
+						  currentState[i][j][k] = 0;
+					   }
+				    }
+
+				    if(previousState[i][j][k] == 0 ) {
+					   if(numberOfNeighbours[i][j][k] == 6){
+						  currentState[i][j][k] = 1;
+					   }
+					   else {
+						  currentState[i][j][k] = 0;
+					   }
 				
-				}
+				    }
 
+                }
             }
         }
-    }
+
+        if(consoleCount == 1){
+            console.log("currentState:")
+            console.log(currentState);
+            consoleCount++;
+        }
 
 
-    //Set previousState equal to currentState
-    //previousState = currentState;
+        //Set previousState equal to currentState
+        //previousState = currentState;
 
 
 
 
-    // View rotations
-    var ctm = mat4();
-    ctm = mult( ctm, rotateX(spinX) );
-    ctm = mult( ctm, rotateY(spinY) ) ;
+        // View rotations
+        var ctm = mat4();
+        ctm = mult( ctm, rotateX(spinX) );
+        ctm = mult( ctm, rotateY(spinY) ) ;
 
     
-    // Initial displacement
-    var init = -1.0 + lengthCell/2.0;
-    var deltaX = init;
-    var deltaY = init;
-    var deltaZ = init;
+        // Initial displacement
+        var init = -1.0 + lengthCell/2.0;
+        var deltaX = init;
+        var deltaY = init;
+        var deltaZ = init;
 
-    // Draw boxes according to currentState
-    for (var k = 0; k < n; k++) {
+        // Draw boxes according to currentState
+        for (var k = 0; k < n; k++) {
 
-        for(var j = 0; j< n; j++) {
+            for(var j = 0; j< n; j++) {
 
-            for(var i = 0; i < n; i++){
+                for(var i = 0; i < n; i++){
 
-                ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
-                ctm = mult( ctm, scalem( lengthBox, lengthBox, lengthBox ) );
-                gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
-                gl.drawArrays( gl.TRIANGLES, 0, numVertices );
+                    ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
+                    ctm = mult( ctm, scalem( lengthBox, lengthBox, lengthBox ) );
+                    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+                    gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
-                ctm = mat4();
-                ctm = mult( ctm, rotateX(spinX) );
-                ctm = mult( ctm, rotateY(spinY) ) ;
+                    ctm = mat4();
+                    ctm = mult( ctm, rotateX(spinX) );
+                    ctm = mult( ctm, rotateY(spinY) ) ;
 
-                deltaX += lengthCell;
+                    deltaX += lengthCell;
+                }
+                deltaX = init;
+                deltaY += lengthCell;
             }
-            deltaX = init;
-            deltaY += lengthCell;
+            deltaY = init;
+            deltaZ += lengthCell;
         }
-        deltaY = init;
-        deltaZ += lengthCell;
-    }
 
 
-    requestAnimFrame( render );
+    }, 100)
 }
 
