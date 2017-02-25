@@ -160,7 +160,7 @@ window.onload = function init()
     for(var i = 0; i < n; i++){
         for(var j = 0; j < n; j++){
             for(var k = 0; k < n; k++){
-                previousState[i][j][k] = Math.round(Math.random());
+                previousState[i][j][k] = Math.round(0.7*Math.random());
 
             }
         }
@@ -399,7 +399,7 @@ function render()
 
 
         //Set previousState equal to currentState
-        //previousState = currentState;
+        previousState = currentState;
 
 
 
@@ -422,11 +422,12 @@ function render()
             for(var j = 0; j< n; j++) {
 
                 for(var i = 0; i < n; i++){
-
-                    ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
-                    ctm = mult( ctm, scalem( lengthBox, lengthBox, lengthBox ) );
-                    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
-                    gl.drawArrays( gl.TRIANGLES, 0, numVertices );
+                    if(currentState[i][j][k] == 1){
+                        ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
+                        ctm = mult( ctm, scalem( lengthBox, lengthBox, lengthBox ) );
+                        gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+                        gl.drawArrays( gl.TRIANGLES, 0, numVertices );
+                    }
 
                     ctm = mat4();
                     ctm = mult( ctm, rotateX(spinX) );
@@ -442,6 +443,6 @@ function render()
         }
 
 
-    }, 100)
+    }, 1000)
 }
 
