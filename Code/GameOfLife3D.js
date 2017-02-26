@@ -19,13 +19,13 @@ var colors = [];
 var height = 0.0;
 
 var movement = false;     // Do we rotate?
-var spinX = 0;
-var spinY = 0;
+var spinX = -45;
+var spinY = -45;
 var origX;
 var origY;
 
 //number of boxes in each direction, i.e. n x n x n boxes.
-var n = 10;
+var n = 20;
 
 //size of cell for box.
 
@@ -36,12 +36,12 @@ var lengthCell = 2.0/n;
 var lengthBox = lengthCell/1.1;
 
 // Size of view Box
-var near = -2;
-var far = 2;
-var left = -2.0;
-var right = 2.0;
-var ytop = 2.0;
-var bottom = -2.0;
+var near = -1.5;
+var far = 1.5;
+var left = -1.5;
+var right = 1.5;
+var ytop = 1.5;
+var bottom = -1.5;
 
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
@@ -51,14 +51,6 @@ var previousState, currentState;
 var numberOfNeighbours;
 
 var consoleCount = 0;
-
-
-
-
-
-
-
-
 
 
 
@@ -85,7 +77,7 @@ window.onload = function init()
     colorCube();
 
     gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+    gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
     
     gl.enable(gl.DEPTH_TEST);
 
@@ -160,7 +152,7 @@ window.onload = function init()
     for(var i = 0; i < n; i++){
         for(var j = 0; j < n; j++){
             for(var k = 0; k < n; k++){
-                previousState[i][j][k] = Math.round(0.7*Math.random());
+                previousState[i][j][k] = Math.round(0.62*Math.random());
 
             }
         }
@@ -207,14 +199,9 @@ window.onload = function init()
 
 
 
-
-
 //
 // Several helper functions:
 //
-
-
-
 
 function isInsideBounds(i,j,k)
 {
@@ -228,12 +215,6 @@ function isInsideBounds(i,j,k)
 
 function countNumberOfNeighbours(x,y,z)
 {
-	//console.log("x:");
-    //console.log(x);
-    //console.log("y:");
-    //console.log(y);
-    //console.log("z:");
-    //console.log(z);
 
 	var count = 0;
 
@@ -245,14 +226,6 @@ function countNumberOfNeighbours(x,y,z)
         			count = count + previousState[x+i][y+j][z+k];
     			}
 
-    			//if(y==9){
-    				//console.log("i:");
-    				//console.log(i);
-    				//console.log("j:");
-    				//console.log(j);
-    				//console.log("k:");
-    				//console.log(k);
-    			//}
 
 			}
 		}
@@ -398,8 +371,6 @@ function render()
         }
 
 
-        //Set previousState equal to currentState
-        previousState = currentState;
 
 
 
@@ -441,6 +412,9 @@ function render()
             deltaY = init;
             deltaZ += lengthCell;
         }
+
+        //Set previousState equal to currentState
+        previousState = currentState;
 
 
     }, 1000)
