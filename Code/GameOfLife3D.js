@@ -36,12 +36,14 @@ var lengthCell = 2.0/n;
 var lengthBox = lengthCell/1.1;
 
 // Size of view Box
-var near = -1.5;
-var far = 1.5;
-var left = -1.5;
-var right = 1.5;
-var ytop = 1.5;
-var bottom = -1.5;
+var lengthViewBox = 1.7;
+
+var near = -lengthViewBox;
+var far = lengthViewBox;
+var left = -lengthViewBox;
+var right = lengthViewBox;
+var ytop = lengthViewBox;
+var bottom = -lengthViewBox;
 
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
@@ -162,6 +164,25 @@ window.onload = function init()
     console.log(previousState);
 
 
+    // Event listener for scrolling (zooming in and out)
+
+    var lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    // element should be replaced with the actual target element on which you have applied scroll, use window in case of no target element.
+    window.addEventListener("scroll", function(){ // or window.addEventListener("scroll"....
+        var st = window.pageYOffset || document.documentElement.scrollTop; // Credits: "https://github.com/qeremy/so/blob/master/so.dom.js#L426"
+        if (st > lastScrollTop){
+            // downscroll code
+            console.log("niður");
+        } 
+        else {
+            // upscroll code
+            console.log("upp");
+        }
+        lastScrollTop = st;
+    }, false);
+
+
+
 
     //event listeners for mouse
     canvas.addEventListener("mousedown", function(e){
@@ -263,10 +284,10 @@ function quad(a, b, c, d)
         [ 0.0, 0.0, 0.0, 1.0 ],  // black
         [ 1.0, 0.0, 0.0, 1.0 ],  // red
         [ 1.0, 1.0, 0.0, 1.0 ],  // yellow
+        [ 0.0, 1.0, 1.0, 1.0 ],  // cyan
+        [ 1.0, 0.0, 1.0, 1.0 ],  // magenta
         [ 0.0, 1.0, 0.0, 1.0 ],  // green
         [ 0.0, 0.0, 1.0, 1.0 ],  // blue
-        [ 1.0, 0.0, 1.0, 1.0 ],  // magenta
-        [ 0.0, 1.0, 1.0, 1.0 ],  // cyan
         [ 1.0, 1.0, 1.0, 1.0 ]   // white
     ];
 
