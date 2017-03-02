@@ -60,7 +60,9 @@ var isChangeStateCompleted = true;
 
 
 
+var growthDecayFactor = 0.25;
 
+var numberOfSteps = 1/growthDecayFactor; //Should be an integer
 
 
 
@@ -175,8 +177,6 @@ window.onload = function init()
         }
     }
 
-    console.log("PreviousState:");
-    console.log(previousState);
 
 
     // Event listener for keys up and down (zooming in and out)
@@ -421,10 +421,12 @@ function render()
                     //Calculate lifeState for each cell
 
                     if(previousState[i][j][k] == 1 && currentState[i][j][k] == 0){
-                          lifeState[i][j][k] = -1; // dying
+                        console.log("Dying")
+                        lifeState[i][j][k] = -1; // dying
                        }
                     else if(previousState[i][j][k] == 0 && currentState[i][j][k] == 1) {
-                          lifeState[i][j][k] = 1; // cloning
+                        console.log("Cloning")
+                        lifeState[i][j][k] = 1; // cloning
                        }
                     else {
                         lifeState[i][j][k] = 0; // staying alive or dead
@@ -433,7 +435,6 @@ function render()
                 }
             }
         }
-
 
 
 
@@ -486,6 +487,6 @@ function render()
         }
 
 
-    }, 50)
+    }, 100)
 }
 
