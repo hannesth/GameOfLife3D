@@ -164,22 +164,26 @@ window.onload = function init()
     console.log(previousState);
 
 
-    // Event listener for scrolling (zooming in and out)
+    // Event listener for keys up and down (zooming in and out)
 
-    var lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    // element should be replaced with the actual target element on which you have applied scroll, use window in case of no target element.
-    window.addEventListener("scroll", function(){ // or window.addEventListener("scroll"....
-        var st = window.pageYOffset || document.documentElement.scrollTop; // Credits: "https://github.com/qeremy/so/blob/master/so.dom.js#L426"
-        if (st > lastScrollTop){
-            // downscroll code
-            console.log("niður");
-        } 
-        else {
-            // upscroll code
-            console.log("upp");
+    //Event listener for keyboard
+    window.addEventListener("keydown", function(e){
+        switch( e.keyCode ) {
+            case 38: //efri ör
+                console.log("upp")
+                if(lengthViewBox > 0.5) {
+                    lengthViewBox *= 0.9;
+                }
+                break;
+            case 40: //neðri ör
+                console.log("niður")
+                lengthViewBox *= 1.1;
+                break;
+            default:
+                lengthViewBox *= 1.0;
+
         }
-        lastScrollTop = st;
-    }, false);
+    });
 
 
 
@@ -353,7 +357,13 @@ function render()
         window.requestAnimFrame(render);
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        //  Projection Matrix    
+        //  Projection Matrix   
+        near = -lengthViewBox;
+        far = lengthViewBox;
+        left = -lengthViewBox;
+        right = lengthViewBox;
+        ytop = lengthViewBox;
+        bottom = -lengthViewBox; 
         projectionMatrix = ortho(left, right, bottom, ytop, near, far);
         gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
@@ -406,14 +416,18 @@ function render()
         ctm = mult( ctm, rotateX(spinX) );
         ctm = mult( ctm, rotateY(spinY) ) ;
 
-    
+        
+
+
+
+
+
+        // Draw boxes according to currentState
         // Initial displacement
         var init = -1.0 + lengthCell/2.0;
         var deltaX = init;
         var deltaY = init;
         var deltaZ = init;
-
-        // Draw boxes according to currentState
         for (var k = 0; k < n; k++) {
 
             for(var j = 0; j< n; j++) {
@@ -439,13 +453,18 @@ function render()
             deltaZ += lengthCell;
         }
 
-        //Set previousState equal to currentState every 1 second
-        // so that it calculates a new currentState every 1 second
+
+
+
+
+
+        //Set previousState equal to currentState,
+        // so that it calculates a new currentState, every 1 second
         if(isChangeStateCompleted){
             changeState();
         }
 
 
-    }, 0)
+    }, 50)
 }
 
