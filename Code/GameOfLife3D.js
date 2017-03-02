@@ -49,8 +49,10 @@ var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
 
 var previousState, currentState;
-
 var numberOfNeighbours;
+var lifeState;
+
+
 
 var consoleCount = 0;
 
@@ -109,7 +111,7 @@ window.onload = function init()
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
 
     
-    // Preallocate n x n x n arrays previousState , currentState and numberOfNeighbours
+    // Preallocate n x n x n arrays previousState , currentState,  numberOfNeighbours and lifeState:
 
     previousState = new Array(n).fill(0);
 
@@ -147,6 +149,19 @@ window.onload = function init()
             return new Array(n).fill(0);
         });
     });
+
+    lifeState = new Array(n).fill(0);
+
+    lifeState = lifeState.map( function(x) {
+        return new Array(n).fill(0);
+    });
+
+    lifeState = lifeState.map( function(x) {
+        return x.map( function(x) {
+            return new Array(n).fill(0);
+        });
+    });
+
 
 
     // Initialize previousState (1 means the box is alive, 0 means that it is dead)
@@ -370,16 +385,20 @@ function render()
         
 
 
-        // Calculate numberOfNeighbours using previousState for each cell
+        // Calculate for each cell: 
         //
-        // and currentState using previousState and numberOfNeighbours for each cell
+        // numberOfNeighbours using previousState
+        // currentState using previousState and numberOfNeighbours
+        // lifeState using previousState and currentState
 
         for(var i = 0; i < n; i++){
             for(var j = 0; j < n; j++){
                 for(var k = 0; k < n; k++){
 
+                    //Calculate numberOfNeighbours for each cell
 				    numberOfNeighbours[i][j][k] = countNumberOfNeighbours(i,j,k);
 
+                    //Calculate currentState for each cell
                     if(previousState[i][j][k] == 1)
                     {
                        if(numberOfNeighbours[i][j][k] >= 5 && numberOfNeighbours[i][j][k] <= 7){
@@ -397,7 +416,18 @@ function render()
                        else {
                           currentState[i][j][k] = 0;
                        }
-                
+                    }
+
+                    //Calculate lifeState for each cell
+
+                    if(previousState[i][j][k] == 1 && currentState[i][j][k] == 0){
+                          lifeState[i][j][k] = -1; // dying
+                       }
+                    else if(previousState[i][j][k] == 0 && currentState[i][j][k] == 1) {
+                          lifeState[i][j][k] = 1; // cloning
+                       }
+                    else {
+                        lifeState[i][j][k] = 0; // staying alive or dead
                     }
 
                 }
@@ -421,7 +451,7 @@ function render()
         var deltaX = 0;
         var deltaY = 0;
         var deltaZ = 0;
-        
+
         for (var k = 0; k < n; k++) {
             for(var j = 0; j< n; j++) {
                 for(var i = 0; i < n; i++){
@@ -441,6 +471,7 @@ function render()
                     ctm = mat4();
                     ctm = mult( ctm, rotateX(spinX) );
                     ctm = mult( ctm, rotateY(spinY) ) ;
+
                 }
             }
         }
