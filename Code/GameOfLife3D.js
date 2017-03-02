@@ -170,13 +170,11 @@ window.onload = function init()
     window.addEventListener("keydown", function(e){
         switch( e.keyCode ) {
             case 38: //efri ör
-                console.log("upp")
                 if(lengthViewBox > 0.5) {
                     lengthViewBox *= 0.9;
                 }
                 break;
             case 40: //neðri ör
-                console.log("niður")
                 lengthViewBox *= 1.1;
                 break;
             default:
@@ -310,11 +308,11 @@ function quad(a, b, c, d)
         [ 0.0, 0.0, 0.0, 1.0 ],  // black
         [ 1.0, 0.0, 0.0, 1.0 ],  // red
         [ 1.0, 1.0, 0.0, 1.0 ],  // yellow
-        [ 0.0, 1.0, 1.0, 1.0 ],  // cyan
-        [ 1.0, 0.0, 1.0, 1.0 ],  // magenta
         [ 0.0, 1.0, 0.0, 1.0 ],  // green
         [ 0.0, 0.0, 1.0, 1.0 ],  // blue
+        [ 0.5, 0.0, 0.5, 1.0 ],  // purple
         [ 1.0, 1.0, 1.0, 1.0 ]   // white
+        [ 0.0, 0.0, 0.0, 1.0 ],  // black   
     ];
 
     // We need to parition the quad into two triangles in order for
@@ -357,6 +355,8 @@ function render()
         window.requestAnimFrame(render);
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+       
+
         //  Projection Matrix   
         near = -lengthViewBox;
         far = lengthViewBox;
@@ -367,7 +367,12 @@ function render()
         projectionMatrix = ortho(left, right, bottom, ytop, near, far);
         gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
-        // Calculate numberOfNeighbours using previousState
+        
+
+
+        // Calculate numberOfNeighbours using previousState for each cell
+        //
+        // and currentState using previousState and numberOfNeighbours for each cell
 
         for(var i = 0; i < n; i++){
             for(var j = 0; j < n; j++){
@@ -375,41 +380,32 @@ function render()
 
 				    numberOfNeighbours[i][j][k] = countNumberOfNeighbours(i,j,k);
 
-                }
-            }
-        }
+                    if(previousState[i][j][k] == 1)
+                    {
+                       if(numberOfNeighbours[i][j][k] >= 5 && numberOfNeighbours[i][j][k] <= 7){
+                          currentState[i][j][k] = 1;
+                       }
+                       else {
+                          currentState[i][j][k] = 0;
+                       }
+                    }
 
-        // Calculate currentState using numberOfNeighbours
-
-        for(var i = 0; i < n; i++){
-            for(var j = 0; j < n; j++){
-                for(var k = 0; k < n; k++){
-
-            	   if(previousState[i][j][k] == 1)
-				    {
-					   if(numberOfNeighbours[i][j][k] >= 5 && numberOfNeighbours[i][j][k] <= 7){
-						  currentState[i][j][k] = 1;
-					   }
-					   else {
-						  currentState[i][j][k] = 0;
-					   }
-				    }
-
-				    if(previousState[i][j][k] == 0 ) {
-					   if(numberOfNeighbours[i][j][k] == 6){
-						  currentState[i][j][k] = 1;
-					   }
-					   else {
-						  currentState[i][j][k] = 0;
-					   }
-				
-				    }
+                    if(previousState[i][j][k] == 0 ) {
+                       if(numberOfNeighbours[i][j][k] == 6){
+                          currentState[i][j][k] = 1;
+                       }
+                       else {
+                          currentState[i][j][k] = 0;
+                       }
+                
+                    }
 
                 }
             }
         }
 
-    
+
+
 
         // View rotations
         var ctm = mat4();
@@ -419,15 +415,12 @@ function render()
         
 
 
-
-
-
         // Draw boxes according to currentState
         // Initial displacement
-        var init = -1.0 + lengthCell/2.0;
-        var deltaX = init;
-        var deltaY = init;
-        var deltaZ = init;
+        var initDelta = -1.0 + lengthCell/2.0;
+        var deltaX = initDelta;
+        var deltaY = initDelta;
+        var deltaZ = initDelta;
         for (var k = 0; k < n; k++) {
 
             for(var j = 0; j< n; j++) {
@@ -446,14 +439,12 @@ function render()
 
                     deltaX += lengthCell;
                 }
-                deltaX = init;
+                deltaX = initDelta;
                 deltaY += lengthCell;
             }
-            deltaY = init;
+            deltaY = initDelta;
             deltaZ += lengthCell;
         }
-
-
 
 
 
