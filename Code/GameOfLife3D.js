@@ -418,14 +418,19 @@ function render()
         // Draw boxes according to currentState
         // Initial displacement
         var initDelta = -1.0 + lengthCell/2.0;
-        var deltaX = initDelta;
-        var deltaY = initDelta;
-        var deltaZ = initDelta;
+        var deltaX = 0;
+        var deltaY = 0;
+        var deltaZ = 0;
+        
         for (var k = 0; k < n; k++) {
-
             for(var j = 0; j< n; j++) {
-
                 for(var i = 0; i < n; i++){
+                    
+                    deltaX = initDelta + i*lengthCell;
+                    deltaY = initDelta + j*lengthCell;
+                    deltaZ = initDelta + k*lengthCell;
+
+
                     if(currentState[i][j][k] == 1){
                         ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
                         ctm = mult( ctm, scalem( lengthBox, lengthBox, lengthBox ) );
@@ -436,14 +441,8 @@ function render()
                     ctm = mat4();
                     ctm = mult( ctm, rotateX(spinX) );
                     ctm = mult( ctm, rotateY(spinY) ) ;
-
-                    deltaX += lengthCell;
                 }
-                deltaX = initDelta;
-                deltaY += lengthCell;
             }
-            deltaY = initDelta;
-            deltaZ += lengthCell;
         }
 
 
