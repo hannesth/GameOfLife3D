@@ -54,7 +54,7 @@ var numberOfNeighbours;
 
 var consoleCount = 0;
 
-
+var isChangeStateCompleted = true;
 
 
 
@@ -219,7 +219,6 @@ window.onload = function init()
 
 
 
-
 //
 // Several helper functions:
 //
@@ -255,6 +254,29 @@ function countNumberOfNeighbours(x,y,z)
 	count = count - previousState[x][y][z];
 	return count;
 }
+
+
+
+
+function changeState(){
+    isChangeStateCompleted = false;
+
+        setTimeout(function() {
+            
+            for(var i = 0; i < n; i++){
+                for(var j = 0; j < n; j++){
+                    for(var k = 0; k < n; k++){
+                        previousState[i][j][k] = currentState[i][j][k];
+                    }
+                }
+            }
+
+            isChangeStateCompleted = true;
+        }, 1000)
+
+}
+
+
 
 
 function colorCube()
@@ -347,14 +369,6 @@ function render()
             }
         }
 
-        if(consoleCount == 0){
-    	   console.log("numberOfNeighbours:")
-    	   console.log(numberOfNeighbours);
-    	   consoleCount++;
-        }
-
-
-
         // Calculate currentState using numberOfNeighbours
 
         for(var i = 0; i < n; i++){
@@ -385,16 +399,7 @@ function render()
             }
         }
 
-        if(consoleCount == 1){
-            console.log("currentState:")
-            console.log(currentState);
-            consoleCount++;
-        }
-
-
-
-
-
+    
 
         // View rotations
         var ctm = mat4();
@@ -434,10 +439,13 @@ function render()
             deltaZ += lengthCell;
         }
 
-        //Set previousState equal to currentState
-        previousState = currentState;
+        //Set previousState equal to currentState every 1 second
+        // so that it calculates a new currentState every 1 second
+        if(isChangeStateCompleted){
+            changeState();
+        }
 
 
-    }, 1000)
+    }, 0)
 }
 
