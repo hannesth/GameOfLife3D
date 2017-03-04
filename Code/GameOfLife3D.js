@@ -24,6 +24,8 @@ var spinY = -45;
 var origX;
 var origY;
 
+var ctm;
+
 //number of boxes in each direction, i.e. n x n x n boxes.
 var n = 20;
 
@@ -50,7 +52,6 @@ var modelViewMatrixLoc, projectionMatrixLoc;
 
 var previousState, currentState;
 var numberOfNeighbours;
-var lifeState;
 
 
 
@@ -58,11 +59,16 @@ var consoleCount = 0;
 
 var isChangeStateCompleted = true;
 
+var timeToRender = 75;
+var timeToChangeState = 1000;
+
+// number of steps in the process of decaying and growing must be
+// less than timeToChangeState/timeToRender
+var numberOfSteps = 10;
+var growthDecayFactor = 1/numberOfSteps;
+var step = 0;
 
 
-var growthDecayFactor = 0.25;
-
-var numberOfSteps = 1/growthDecayFactor; //Should be an integer
 
 
 
@@ -113,7 +119,7 @@ window.onload = function init()
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
 
     
-    // Preallocate n x n x n arrays previousState , currentState,  numberOfNeighbours and lifeState:
+    // Preallocate n x n x n arrays previousState , currentState and  numberOfNeighbours:
 
     previousState = new Array(n).fill(0);
 
@@ -147,18 +153,6 @@ window.onload = function init()
     });
 
     numberOfNeighbours = numberOfNeighbours.map( function(x) {
-        return x.map( function(x) {
-            return new Array(n).fill(0);
-        });
-    });
-
-    lifeState = new Array(n).fill(0);
-
-    lifeState = lifeState.map( function(x) {
-        return new Array(n).fill(0);
-    });
-
-    lifeState = lifeState.map( function(x) {
         return x.map( function(x) {
             return new Array(n).fill(0);
         });
@@ -289,9 +283,74 @@ function changeState(){
             }
 
             isChangeStateCompleted = true;
-        }, 1000)
+        
+        }, timeToChangeState)
 
 }
+
+
+
+
+function draw()
+{
+
+    // Initial displacement
+    var initDelta = -1.0 + lengthCell/2.0;
+    var deltaX = 0;
+    var deltaY = 0;
+    var deltaZ = 0;
+
+    
+
+    var decayLength = lengthBox*(1 - step*growthDecayFactor);
+    var growthLength = lengthBox*(0 + step*growthDecayFactor);
+    console.log(step*growthDecayFactor);
+
+    for (var k = 0; k < n; k++) {
+        for(var j = 0; j< n; j++) {
+            for(var i = 0; i < n; i++){
+
+                deltaX = initDelta + i*lengthCell;
+                deltaY = initDelta + j*lengthCell;
+                deltaZ = initDelta + k*lengthCell;
+
+
+                // Decaying
+                if(previousState[i][j][k] == 1 && currentState[i][j][k] == 0){
+
+                    ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
+                    ctm = mult( ctm, scalem( decayLength, decayLength, decayLength ) );
+                    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+                    gl.drawArrays( gl.TRIANGLES, 0, numVertices ); 
+                }
+                // Growing
+                else if(previousState[i][j][k] == 0 && currentState[i][j][k] == 1) {
+
+                    ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
+                    ctm = mult( ctm, scalem( growthLength, growthLength, growthLength ) );
+                    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+                    gl.drawArrays( gl.TRIANGLES, 0, numVertices ); 
+                }
+                // Staying alive
+                else if(previousState[i][j][k] == 1 && currentState[i][j][k] == 1){
+
+                    ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
+                    ctm = mult( ctm, scalem( lengthBox, lengthBox, lengthBox ) );
+                    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
+                    gl.drawArrays( gl.TRIANGLES, 0, numVertices ); 
+                }
+                ctm = mat4();
+                ctm = mult( ctm, rotateX(spinX) );
+                ctm = mult( ctm, rotateY(spinY) ) ;
+            }
+
+        }
+    }
+    if(step<numberOfSteps){
+        step++;
+    }
+}
+
 
 
 
@@ -369,8 +428,7 @@ function render()
     setTimeout(function() {
         window.requestAnimFrame(render);
         gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-       
+        
 
         //  Projection Matrix   
         near = -lengthViewBox;
@@ -389,7 +447,6 @@ function render()
         //
         // numberOfNeighbours using previousState
         // currentState using previousState and numberOfNeighbours
-        // lifeState using previousState and currentState
 
         for(var i = 0; i < n; i++){
             for(var j = 0; j < n; j++){
@@ -417,21 +474,6 @@ function render()
                           currentState[i][j][k] = 0;
                        }
                     }
-
-                    //Calculate lifeState for each cell
-
-                    if(previousState[i][j][k] == 1 && currentState[i][j][k] == 0){
-                        console.log("Dying")
-                        lifeState[i][j][k] = -1; // dying
-                       }
-                    else if(previousState[i][j][k] == 0 && currentState[i][j][k] == 1) {
-                        console.log("Cloning")
-                        lifeState[i][j][k] = 1; // cloning
-                       }
-                    else {
-                        lifeState[i][j][k] = 0; // staying alive or dead
-                    }
-
                 }
             }
         }
@@ -439,54 +481,30 @@ function render()
 
 
         // View rotations
-        var ctm = mat4();
+        ctm = mat4();
         ctm = mult( ctm, rotateX(spinX) );
         ctm = mult( ctm, rotateY(spinY) ) ;
 
         
 
 
-        // Draw boxes according to currentState
-        // Initial displacement
-        var initDelta = -1.0 + lengthCell/2.0;
-        var deltaX = 0;
-        var deltaY = 0;
-        var deltaZ = 0;
 
-        for (var k = 0; k < n; k++) {
-            for(var j = 0; j< n; j++) {
-                for(var i = 0; i < n; i++){
-                    
-                    deltaX = initDelta + i*lengthCell;
-                    deltaY = initDelta + j*lengthCell;
-                    deltaZ = initDelta + k*lengthCell;
-
-
-                    if(currentState[i][j][k] == 1){
-                        ctm = mult( ctm, translate( deltaX, deltaY, deltaZ ));
-                        ctm = mult( ctm, scalem( lengthBox, lengthBox, lengthBox ) );
-                        gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(ctm));
-                        gl.drawArrays( gl.TRIANGLES, 0, numVertices );
-                    }
-
-                    ctm = mat4();
-                    ctm = mult( ctm, rotateX(spinX) );
-                    ctm = mult( ctm, rotateY(spinY) ) ;
-
-                }
-            }
-        }
+        // Draw boxes according to currentState and previousState
+        draw()
+        
+    
 
 
 
 
-        //Set previousState equal to currentState,
-        // so that it calculates a new currentState, every 1 second
+        // Set previousState equal to currentState, so that it
+        // calculates a new currentState, every 1 second
         if(isChangeStateCompleted){
             changeState();
+            step = 0;
         }
 
 
-    }, 100)
+    }, timeToRender)
 }
 
