@@ -27,7 +27,7 @@ var origY;
 var ctm;
 
 //number of boxes in each direction, i.e. n x n x n boxes.
-var n = 20;
+var n = 10;
 
 //size of cell for box.
 
@@ -60,7 +60,7 @@ var consoleCount = 0;
 var isChangeStateCompleted = true;
 
 var timeToRender = 75;
-var timeToChangeState = 1000;
+var timeToChangeState = 1800;
 
 // number of steps in the process of decaying and growing must be
 // less than timeToChangeState/timeToRender
@@ -282,6 +282,7 @@ function changeState(){
                 }
             }
 
+            step = 0;
             isChangeStateCompleted = true;
         
         }, timeToChangeState)
@@ -501,7 +502,6 @@ function render()
         // calculates a new currentState, every 1 second
         if(isChangeStateCompleted){
             changeState();
-            step = 0;
         }
 
 
