@@ -27,7 +27,7 @@ var origY;
 var ctm;
 
 //number of boxes in each direction, i.e. n x n x n boxes.
-var n = 10;
+var n = 20;
 
 //size of cell for box.
 
@@ -59,12 +59,12 @@ var consoleCount = 0;
 
 var isChangeStateCompleted = true;
 
-var timeToRender = 75;
-var timeToChangeState = 1800;
+var timeToRender = 50;
+var timeToChangeState = 1000;
 
 // number of steps in the process of decaying and growing must be
 // less than timeToChangeState/timeToRender
-var numberOfSteps = 10;
+var numberOfSteps = 7;
 var growthDecayFactor = 1/numberOfSteps;
 var step = 0;
 
@@ -185,6 +185,9 @@ window.onload = function init()
                 break;
             case 40: //neðri ör
                 lengthViewBox *= 1.1;
+                break;
+            case 49: // 1 lykill
+                makeGlider();
                 break;
             default:
                 lengthViewBox *= 1.0;
@@ -353,7 +356,19 @@ function draw()
 }
 
 
-
+function makeGlider()
+{
+    previousState[5][n-4][0] = 1;
+    previousState[6][n-4][0] = 1;
+    previousState[5][n-4][1] = 1;
+    previousState[6][n-4][1] = 1;
+    previousState[5][n-4][2] = 1;
+    previousState[6][n-4][2] = 1;
+    previousState[5][n-3][2] = 1;
+    previousState[6][n-3][2] = 1;
+    previousState[5][n-2][1] = 1;
+    previousState[6][n-2][1] = 1;
+}
 
 
 function colorCube()
